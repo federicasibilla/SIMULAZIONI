@@ -269,10 +269,10 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
     print('Solving iteration zero, finding equilibrium from initial guess')
 
     # computing equilibrium concentration at ztep zero
-    current_R, up = SOR_3D(initial_N, param, mat, source, initial_guess)
+    current_R, _, _ = SOR_3D(initial_N, param, mat, source, initial_guess)
 
     # refine result
-    finer_R, finer_up = SOR_3D(change_grid_N(initial_N,n*2), param, mat, source, change_grid_R(current_R,n*2))
+    finer_R, finer_up, finer_prod = SOR_3D(change_grid_N(initial_N,n*2), param, mat, source, change_grid_R(current_R,n*2))
     for ref in range(3,t+1):
         m = n*ref
         finer_R, finer_up, finer_prod = SOR_3D(change_grid_N(initial_N,m), param, mat, source, change_grid_R(finer_R,m))
@@ -286,8 +286,8 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
 
     frames_N.append(decoded_N)
     frames_R.append(coarser_R)
-    frames_up.append(change_grid_R(finer_up))
-    frames_in.append(change_grid_R(finer_prod))
+    frames_up.append(change_grid_R(finer_up,n))
+    frames_in.append(change_grid_R(finer_prod,n))
     frames_mu.append(mod)
 
     for i in range(steps):
@@ -299,7 +299,7 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
         coarser_R = change_grid_R(finer_R,n)
 
         # compute growth rates
-        g_rates   = growth_rates(coarser_R,current_N,param,mat,up)
+        g_rates, mod  = growth_rates(coarser_R,current_N,param,mat)
         # performe DB dynamics
         decoded_N,check,most_present = death_birth_periodic(decode(current_N),g_rates)
         # check that there is more than one species
@@ -310,8 +310,8 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
 
         frames_N.append(decoded_N)
         frames_R.append(coarser_R)
-        frames_up.append(change_grid_R(finer_up))
-        frames_in.append(change_grid_R(finer_prod))
+        frames_up.append(change_grid_R(finer_up,n))
+        frames_in.append(change_grid_R(finer_prod,n))
         frames_mu.append(mod)
         
 

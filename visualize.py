@@ -34,18 +34,18 @@ sns.set(style='whitegrid')
 #---------------------------------------------------------------------------------
 # define R_ongrid(R) to visualize the equilibrium concentrations for each resource
 
-def R_ongrid(R):
+def R_ongrid(R, exe):
 
     """
     R: matrix, nxnxn_r, chemicals concentrations
+    exe: string, name of executable file
 
     PLOTS the equilibrium concentrations for each nutrient
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/R_fin.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/R_fin.png')
 
     # create the grid
     x = np.arange(R.shape[0])
@@ -54,7 +54,7 @@ def R_ongrid(R):
 
     # R matrix as function of x and y plot (one plot per nutrient)
     n_r = R.shape[2]
-    fig, axs = plt.subplots(1, n_r, figsize=(18, 6))
+    fig, axs = plt.subplots(1, n_r, figsize=( n_r*5,10))
 
     if n_r == 1:
         im = axs.imshow(R[:, :, 0], cmap='ocean')
@@ -81,17 +81,17 @@ def R_ongrid(R):
 #--------------------------------------------------------------------------------
 # same but 3D
 
-def R_ongrid_3D(R):
+def R_ongrid_3D(R,exe):
     """
     R: matrix, nxnxn_r, chemicals concentrations
+    exe: string, name of executable file
 
     PLOTS the equilibrium concentrations for each nutrient
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/R_fin_3D.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/R_fin_3D.png')
 
     # R matrix as function of x and y plot (one plot per nutrient)
     n_r = R.shape[2]
@@ -122,19 +122,19 @@ def R_ongrid_3D(R):
 #---------------------------------------------------------------------------------
 # define N_ongrid(R) to visualize the disposition of species 
 
-def N_ongrid(N):
+def N_ongrid(N,exe):
 
     """
     N: matrix, nxnxn_s containing nxn elements with length n_s composed by all zeros and
        one corresponding to the species present in the grid point (1 species per grid point)
+    exe: string, name of executable file
 
     PLOTS the grid with current species disposition
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/N_fin.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/N_fin.png')
 
     # define colors for species distinction
     cmap = plt.cm.get_cmap('bwr', N.shape[2])  
@@ -158,19 +158,19 @@ def N_ongrid(N):
 #---------------------------------------------------------------------------------
 # define G_ongrid(G) function to visualize growth rates
 
-def G_ongrid(G,N):
+def G_ongrid(G,N,exe):
 
     """
     G: matrix, nxn, growth rates matrix
     N: matrix, nxnxn_s, hot encoded species state
+    exe: string, name of executable file
 
     RETURNS grid with color gradient corresponding to growth rates
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/G_rates.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/G_rates.png')
 
     fig = plt.figure(figsize=(N.shape[2]*10,10))
 
@@ -201,19 +201,19 @@ def G_ongrid(G,N):
 # define makenet(met_matrix) to visualize the metabolic processes network, with
 # resources as nodes and allocation magnitude as edges thikness
 
-def makenet(met_matrix):
+def makenet(met_matrix,exe):
 
     """
     met_matrix: matrix, n_rxn_r, with resources as rows and columns and allocation rates as
                 entries
+    exe: string, name of executable file
 
     RETURNS the graph of metabolic allocations
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', executable_name + '/met_net.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', exe + '/met_net.png')
 
     G = nx.DiGraph()
 
@@ -237,18 +237,18 @@ def makenet(met_matrix):
 # defining vispreferences(up_mat) function to visualize the uptake preferences 
 # of the different species
 
-def vispreferences(mat):
+def vispreferences(mat,exe):
 
     """
     mat: matrix,  n_sxn_r, uptake of the different species and resources
+    exe: string, name of executable file
 
     RETURNS a graph to visualize uptake preferences 
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', executable_name + '/up_pref.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', exe + '/up_pref.png')
 
     up_mat = mat['uptake']*mat['sign']
 
@@ -297,18 +297,18 @@ def vispreferences(mat):
 #---------------------------------------------------------------------------------------------------------
 # function to visualize aboundances and determin if steady state is reached
 
-def abundances(steps):
+def abundances(steps,exe):
 
     """
     steps: list of matrices where each element represents a point in time
+    exe: string, name of executable file
     
     RETURNS abundance_series: time series matrix of abundances
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/abundances.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/abundances.png')
 
     # Initialize an empty list to store abundance time series
     abundance_series = []
@@ -369,19 +369,19 @@ def abundances(steps):
 #------------------------------------------------------------------------------------------------
 # visualize well mixed time series
 
-def vis_wm(N,R):
+def vis_wm(N,R,exe):
 
     """
     N: list of vectors, n_s, species abundances
     R: list of vectors, n_r, chemicals concentrations
+    exe: string, name of executable file
 
     RETURNS time series of well mixed simulation
 
     """
 
     # plotting path and saving name
-    executable_name = os.path.basename(__file__).split('.')[0]
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', executable_name + '/wm.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wm.png')
 
     # Plot Time Series for Species
     plt.figure(figsize=(8, 5))
@@ -397,7 +397,7 @@ def vis_wm(N,R):
     plt.legend()
     plt.grid(True)  
     plt.tight_layout()  
-    plt.savefig('well_mixed_N.png')
+    plt.savefig(plot_path)
     plt.close()
 
     # Plot Time Series for Resources

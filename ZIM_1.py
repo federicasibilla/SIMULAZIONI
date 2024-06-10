@@ -15,6 +15,8 @@ from visualize import *
 from update import *
 from well_mixed import *
 
+executable_name = os.path.basename(__file__).split('.')[0]
+
 n_s = 8
 n_r = 25
 
@@ -117,7 +119,7 @@ for i,ratio in enumerate(ratios):
     N_wm, R_wm = run_wellmixed(N0_wm,param,mat,dR_dt,dN_dt)
     s1_wm_richness.append(richness_wm(N_wm[-1]))
     # spatial
-    frames_N, _, _, _, _, current_R, current_N, g_rates, _ = simulate_3D(2, f, R_space_ig, N0_space, param, mat)
+    frames_N, _, _, _, _, current_R, current_N, g_rates, _ = simulate_MG(2, f, R_space_ig, N0_space, param, mat,2)
     s1_space_richness.append(richness_sp(current_N))
 
 print(s1_wm_richness,s1_space_richness)
@@ -134,24 +136,22 @@ plt.title('Richness dependence on interaction types')
 plt.legend()
 
 plt.grid(True)
-plt.savefig('s1.png')
+plt.savefig('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/ZIM_1/richness.png')
 
 # for my use:
-vis_wm(N_wm,R_wm)
-R_ongrid(current_R)
-G_ongrid(g_rates,encode(frames[-2], np.array(np.arange(n_s))))
-N_ongrid(current_N)
-R_ongrid_3D(current_R)
-abundances(frames)
-makenet(met_mat)
-vispreferences(mat)
+vis_wm(N_wm,R_wm,executable_name)
+R_ongrid(current_R,executable_name)
+G_ongrid(g_rates,encode(frames_N[-2], np.array(np.arange(n_s))),executable_name)
+N_ongrid(current_N,executable_name)
+R_ongrid_3D(current_R,executable_name)
+abundances(frames_N,executable_name)
+makenet(met_mat,executable_name)
+vispreferences(mat,executable_name)
 
 profiler.disable()
-stats = pstats.Stats(profiler.dump_stats())
-
-# Ordina le statistiche per nome della funzione
+profiler.dump_stats("stats_profiling.raw")
+stats = pstats.Stats("stats_profiling.raw")
 stats.sort_stats('time')
-
 with open("stats_profiling.txt", "w") as f:
     stats.stream = f
     stats.print_stats()
