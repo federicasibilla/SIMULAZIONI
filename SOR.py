@@ -179,7 +179,7 @@ def SOR_3D(N, param, mat, source, initial_guess):
         print("N_iter %d delta_max %e\r" % (len(delta_list)-1, delta_list[-1]), end='')
 
         # check for very small deltas
-        if (np.abs(delta_list[-1])<1e-10):
+        if (np.abs(delta_list[-1])<1e-2):
             break
     
     R_eq = padded_R[1:n+1,1:n+1,1,:]
