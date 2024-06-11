@@ -1,0 +1,15 @@
+import cProfile
+import pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
+profiler.disable()
+
+codice
+
+profiler.dump_stats("stats_profiling_f.raw")
+stats = pstats.Stats("stats_profiling_f.raw")
+stats.sort_stats('time')
+with open("stats_profiling_f.txt", "w") as f:
+    stats.stream = f
+    stats.print_stats()

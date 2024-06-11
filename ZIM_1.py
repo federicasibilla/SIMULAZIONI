@@ -8,8 +8,6 @@ S1.py: file for simulation number 1 in 'CR model project'
 
 import numpy as np
 import matplotlib.pyplot as plt
-import cProfile
-import pstats 
 
 from visualize import *
 from update import *
@@ -59,18 +57,18 @@ m = np.zeros((n_s))
 
 # no reinsertion of chemicals
 R0 = np.zeros((n,n,n_r))
-R0[:,:,0] = 10
+R0[:,:,0] = 10.
 R0_wm = np.zeros((n_r))
-R0_wm[0] = 10
+R0_wm[0] = 10.
 tau = np.zeros((n_r))+np.inf
-tau[0]=1
+tau[0]=1.
 
 
 # define parameters
 param = {
     # model parameters
     'R0' : R0.copy(),                                  # initial conc. nxnxn_r [monod constants]
-    'w'  : np.ones((n_r))*20,                          # energy conversion     [energy/mass]
+    'w'  : np.ones((n_r))*20.,                         # energy conversion     [energy/mass]
     'l'  : np.ones((n_r))*0.6,                         # leakage               [adim]
     'g'  : g,                                          # growth conv. factors  [1/energy]
     'm'  : m,                                          # maintainance requ.    [energy/time]
@@ -81,7 +79,7 @@ param = {
     # sor algorithm parameters
     'n'  : n,                                          # grid points in each dim
     'sor': 1.85,                                       # relaxation parameter
-    'L'  : 100,                                        # grid true size        [length]
+    'L'  : 100.,                                       # grid true size        [length]
     'D'  : 1e2,                                        # diffusion constant    [area/time] 
     'rapp': 0.01,                                      # ration between Dz and Dxy
     'acc': 1e-3,                                       # maximum accepted stopping criterion 
@@ -110,8 +108,6 @@ def richness_sp(N):
 s1_wm_richness = []
 s1_space_richness = []
 
-profiler = cProfile.Profile()
-profiler.enable()
 
 for i,ratio in enumerate(ratios):
     mat['sign'] = sign_mat_list[i]
@@ -119,7 +115,7 @@ for i,ratio in enumerate(ratios):
     N_wm, R_wm = run_wellmixed(N0_wm,param,mat,dR_dt,dN_dt)
     s1_wm_richness.append(richness_wm(N_wm[-1]))
     # spatial
-    frames_N, _, _, _, _, current_R, current_N, g_rates, _ = simulate_MG(2, f, R_space_ig, N0_space, param, mat,2)
+    frames_N, _, _, _, _, current_R, current_N, g_rates, _ = simulate_MG(2, f_optimized_2, R_space_ig, N0_space, param, mat,2)
     s1_space_richness.append(richness_sp(current_N))
 
 print(s1_wm_richness,s1_space_richness)
@@ -148,10 +144,4 @@ abundances(frames_N,executable_name)
 makenet(met_mat,executable_name)
 vispreferences(mat,executable_name)
 
-profiler.disable()
-profiler.dump_stats("stats_profiling.raw")
-stats = pstats.Stats("stats_profiling.raw")
-stats.sort_stats('time')
-with open("stats_profiling.txt", "w") as f:
-    stats.stream = f
-    stats.print_stats()
+

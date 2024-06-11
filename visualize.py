@@ -381,7 +381,8 @@ def vis_wm(N,R,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wm.png')
+    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wmN.png')
+    plot_pathR = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wmR.png')
 
     # Plot Time Series for Species
     plt.figure(figsize=(8, 5))
@@ -392,7 +393,7 @@ def vis_wm(N,R,exe):
     colors = plt.cm.tab10.colors  
 
     for i in range(N.shape[1]):                                       
-        plt.plot(N[:, i], label=f'Species {i}', color=colors[i], linewidth=1)
+        plt.plot(N[:, i], label=f'Species {i+1}', color=colors[i], linewidth=1)
 
     plt.legend()
     plt.grid(True)  
@@ -407,12 +408,12 @@ def vis_wm(N,R,exe):
     plt.ylabel("Concentration")
 
     for i in range(R.shape[1]):                                       
-      plt.plot(R[:, i], label=f'Resource {i}', color=plt.cm.viridis(i/30), linewidth=1)
+      plt.plot(R[:, i], label=f'Resource {i+1}', color=plt.cm.viridis(i/30), linewidth=1)
 
     plt.legend()
     plt.grid(True)  
     plt.tight_layout()  
-    plt.savefig(plot_path)
+    plt.savefig(plot_pathR)
     plt.close()
 
     return

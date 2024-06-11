@@ -1,0 +1,35 @@
+Tue Jun 11 09:31:39 2024    stats_profiling_f.raw
+
+         53 function calls in 0.038 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        3    0.018    0.006    0.018    0.006 {method 'repeat' of 'numpy.ndarray' objects}
+        1    0.012    0.012    0.012    0.012 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.007    0.007    0.007    0.007 {built-in method numpy.core._multiarray_umath.c_einsum}
+        1    0.001    0.001    0.001    0.001 {method 'argmax' of 'numpy.ndarray' objects}
+        2    0.000    0.000    0.018    0.009 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/lib/shape_base.py:1185(tile)
+        5    0.000    0.000    0.000    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.012    0.012 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:71(_wrapreduction)
+        1    0.000    0.000    0.012    0.012 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:2177(sum)
+        1    0.000    0.000    0.001    0.001 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:53(_wrapfunc)
+        1    0.000    0.000    0.007    0.007 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/einsumfunc.py:1009(einsum)
+        1    0.000    0.000    0.001    0.001 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:1140(argmax)
+       10    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/lib/shape_base.py:1267(<genexpr>)
+        5    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/einsumfunc.py:1001(_einsum_dispatcher)
+        2    0.000    0.000    0.000    0.000 {built-in method numpy.array}
+        4    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/lib/shape_base.py:1257(<genexpr>)
+        1    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:72(<dictcomp>)
+        2    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/lib/shape_base.py:1181(_tile_dispatcher)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        1    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:2172(_sum_dispatcher)
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.all}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/fromnumeric.py:1136(_argmax_dispatcher)
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 /Users/federicasibilla/miniconda3/lib/python3.10/site-packages/numpy/core/multiarray.py:346(where)
+        1    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+
+
