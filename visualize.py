@@ -45,7 +45,7 @@ def R_ongrid(R, exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/R_fin.png')
+    plot_path = os.path.join( exe + '/R_fin.png')
 
     # create the grid
     x = np.arange(R.shape[0])
@@ -73,6 +73,7 @@ def R_ongrid(R, exe):
             ax.set_ylabel('y')
             ax.set_title('Resource {}'.format(i+1))
 
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
     plt.close()
 
@@ -91,7 +92,7 @@ def R_ongrid_3D(R,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/R_fin_3D.png')
+    plot_path = os.path.join(exe + '/R_fin_3D.png')
 
     # R matrix as function of x and y plot (one plot per nutrient)
     n_r = R.shape[2]
@@ -114,6 +115,7 @@ def R_ongrid_3D(R,exe):
         ax.plot_surface(X, Y, R[:,:,0])
         ax.set_title(f'Resource {1}')
 
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
     plt.close()
 
@@ -134,7 +136,7 @@ def N_ongrid(N,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/N_fin.png')
+    plot_path = os.path.join( exe + '/N_fin.png')
 
     # define colors for species distinction
     cmap = plt.cm.get_cmap('bwr', N.shape[2])  
@@ -150,6 +152,7 @@ def N_ongrid(N,exe):
     sm.set_array([])
     plt.colorbar(sm,ticks=np.arange(N.shape[2]),label='Species')
 
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
     plt.close()
 
@@ -170,7 +173,7 @@ def G_ongrid(G,N,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/G_rates.png')
+    plot_path = os.path.join(exe + '/G_rates.png')
 
     fig = plt.figure(figsize=(N.shape[2]*10,10))
 
@@ -191,6 +194,7 @@ def G_ongrid(G,N,exe):
         ax.set_title(f'Species {species+1}')
 
     # Save the figure with all subplots
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
 
     plt.close()
@@ -213,7 +217,8 @@ def makenet(met_matrix,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', exe + '/met_net.png')
+    plot_path = os.path.join(exe + '/met_net.png')
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
 
     G = nx.DiGraph()
 
@@ -248,7 +253,7 @@ def vispreferences(mat,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/matrices/', exe + '/up_pref.png')
+    plot_path = os.path.join(exe + '/up_pref.png')
 
     up_mat = mat['uptake']*mat['sign']
 
@@ -288,6 +293,7 @@ def vispreferences(mat,exe):
     plt.legend()
     plt.grid(True) 
 
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
     plt.close()
 
@@ -297,55 +303,32 @@ def vispreferences(mat,exe):
 #---------------------------------------------------------------------------------------------------------
 # function to visualize aboundances and determin if steady state is reached
 
-def abundances(steps,exe):
+def vis_abundances(ab_list, s_list, exe):
 
     """
-    steps: list of matrices where each element represents a point in time
-    exe: string, name of executable file
+    ab_list: list, abundances
+    s_list:  list, shannon diversity 
+    exe: string, executable file
     
     RETURNS abundance_series: time series matrix of abundances
 
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/abundances.png')
-
-    # Initialize an empty list to store abundance time series
-    abundance_series = []
-
-    # Get the number of unique integers present in the matrices
-    num_unique_integers = len(np.unique(steps[0]))
-
-    # Iterate over each time step (matrix)
-    for step in steps:
-        # Initialize an empty list to store abundances for this time step
-        step_abundances = []
-
-        # Count the occurrences of each integer in the matrix
-        for i in range(num_unique_integers):
-            abundance = np.count_nonzero(step == i)
-            step_abundances.append(abundance)
-
-        # Append the abundances for this time step to the abundance series
-        abundance_series.append(step_abundances)
+    plot_path = os.path.join(exe + '/abundances.png') 
 
     # Convert the list of lists to a numpy array
-    abundance_series = np.array(abundance_series)
-
-    # Calculate Shannon diversity for each time step
-    shannon_diversity = []
-    for step in abundance_series:
-        p_i = step / np.sum(step)
-        shannon_diversity.append(entropy(p_i))
+    abundance_series = np.array(ab_list)
+    shannon_series   = np.array(s_list)
 
     # Create subplots
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
     # Plot abundance time series
-    for i in range(num_unique_integers):
+    for i in range(abundance_series.shape[1]):
         axs[0].plot(abundance_series[:, i], label=f'Species {i+1}')
 
-    axs[1].axhline(y=np.log(len(np.unique(steps[0]))), color='red', linestyle='--', label='Max Possible Diversity')
+    axs[1].axhline(y=np.log(len(ab_list[0])), color='red', linestyle='--', label='Max Possible Diversity')
 
     axs[0].set_xlabel('Time Step')
     axs[0].set_ylabel('Abundance')
@@ -354,13 +337,14 @@ def abundances(steps,exe):
     axs[0].grid(True)
 
     # Plot Shannon diversity
-    axs[1].plot(shannon_diversity, color='orange')
+    axs[1].plot(shannon_series, color='orange')
     axs[1].set_xlabel('Time Step')
     axs[1].set_ylabel('Shannon Diversity')
     axs[1].set_title('Shannon Diversity Time Series')
     axs[1].grid(True)
 
     plt.tight_layout()
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
 
     return abundance_series
@@ -381,8 +365,8 @@ def vis_wm(N,R,exe):
     """
 
     # plotting path and saving name
-    plot_path = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wmN.png')
-    plot_pathR = os.path.join('/Users/federicasibilla/Documenti/Tesi/SIMULAZIONI/graphs/', exe + '/wmR.png')
+    plot_path = os.path.join( exe + '/wmN.png')
+    plot_path_R = os.path.join( exe + '/wmR.png')
 
     # Plot Time Series for Species
     plt.figure(figsize=(8, 5))
@@ -398,6 +382,7 @@ def vis_wm(N,R,exe):
     plt.legend()
     plt.grid(True)  
     plt.tight_layout()  
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.savefig(plot_path)
     plt.close()
 
@@ -413,6 +398,7 @@ def vis_wm(N,R,exe):
     plt.legend()
     plt.grid(True)  
     plt.tight_layout()  
+    os.makedirs(os.path.dirname(plot_path_R), exist_ok=True)
     plt.savefig(plot_pathR)
     plt.close()
 

@@ -4,6 +4,7 @@ update.py: file containing the functions to run the simulations with given condi
 CONTAINS: - simulate_3D: function to run a simulation using the SOR_3D algorithm for PBC
           - simulate_2D: function to run a simulation using the SOR_3D algorithm for PBC
           - shannon:     function to calculate shannon diversity in real time to check for convergence
+          - abundances:  function to compute relative abundance of a frame
           - change_grid_R/N: functions for the multigrid solver, to change grids 
 
 """
@@ -12,6 +13,7 @@ import numpy as np
 
 from time import time
 from scipy.interpolate import RegularGridInterpolator
+from numba import jit
 
 from SOR import *
 from N_dynamics import *
@@ -47,21 +49,19 @@ def simulate_3D(steps, source, initial_guess, initial_N, param, mat):
     t0 = time()
 
     # extract list of all possible species
-    all_species = list(range(len(param['g'])))
+    n_s = len(param['g'])
+    all_species = list(range(n_s))
 
     # lists to store time steps 
-    frames_N  = [decode(initial_N)] 
-    frames_R  = [] 
-    frames_up = []
-    frames_in = []
-    frames_mu = []
-    s_list = []
+    last_2_frames_N  = [decode(initial_N)] 
+    abundances = [calc_abundances(initial_N)]
+    s_list = [shannon(initial_N)]
 
     # first iteration
     print('Solving iteration zero, finding equilibrium from initial guess')
 
     # computing equilibrium concentration at ztep zero
-    current_R, up, prod = SOR_3D(initial_N, param, mat, source, initial_guess)
+    current_R, _, _ = SOR_3D(initial_N, param, mat, source, initial_guess)
     # computing growth rates on all the grid
     g_rates, mod  = growth_rates(current_R,initial_N,param,mat)
     # performing DB dynamics
@@ -69,19 +69,17 @@ def simulate_3D(steps, source, initial_guess, initial_N, param, mat):
     current_N = encode(decoded_N, all_species)
 
     # store time step
-    frames_N.append(decoded_N)
-    frames_R.append(current_R)
-    frames_up.append(up)
-    frames_in.append(prod)
-    frames_mu.append(mod)
+    last_2_frames_N.append(decoded_N)
+    abundances.append(calc_abundances(current_N))
 
+    convergence_count = 0
 
     for i in range(steps):
 
         print("Step %i" % (i+1))
 
         # compute new equilibrium, initial guess is previous equilibrium
-        current_R, up, prod = SOR_3D(current_N, param, mat, source, current_R)
+        current_R, _, _ = SOR_3D(current_N, param, mat, source, current_R)
 
         # compute growth rates
         g_rates, mod  = growth_rates(current_R,current_N,param,mat)
@@ -95,11 +93,8 @@ def simulate_3D(steps, source, initial_guess, initial_N, param, mat):
         current_N = encode(decoded_N, all_species)
 
         # save time step
-        frames_N.append(decoded_N)
-        frames_R.append(current_R)
-        frames_up.append(up)
-        frames_in.append(prod)
-        frames_mu.append(mod)
+        last_2_frames_N  = [last_2_frames_N[1], decoded_N]
+        abundances.append(calc_abundances(current_N))
 
         # check if shannon diversity has converged
         s = shannon(current_N)
@@ -109,7 +104,11 @@ def simulate_3D(steps, source, initial_guess, initial_N, param, mat):
             avg = sum(s_list[-200:])/200
             dev = np.sqrt(sum((s_list[-200:]-avg)**2)/200)
 
-            if(np.abs(s-avg)<dev/10000):
+            if(np.abs(s-avg)<dev):
+                convergence_count += 1
+            else: 
+                convergence_count = 0
+            if convergence_count > 100:
                 print('shannon diversity has converged')
                 break
 
@@ -117,7 +116,7 @@ def simulate_3D(steps, source, initial_guess, initial_N, param, mat):
     t1 = time()
     print(f'\n Time taken to solve for {steps} steps: ', round((t1-t0)/60,4), ' minutes \n')
 
-    return frames_N, frames_R, frames_up, frames_in, frames_mu, current_R, current_N, g_rates, s_list   
+    return last_2_frames_N, mod, current_R, current_N, g_rates, s_list, abundances   
 
 
 #----------------------------------------------------------------------------------------------------
@@ -152,12 +151,9 @@ def simulate_2D(steps, source, initial_guess, initial_N, param, mat):
     all_species = list(range(len(param['g'])))
 
     # lists to store time steps 
-    frames_N  = [decode(initial_N)] 
-    frames_R  = [] 
-    frames_up = []
-    frames_in = []
-    frames_mu = []
-    s_list = []
+    last_2_frames_N  = [decode(initial_N)] 
+    abundances = [calc_abundances(initial_N)]
+    s_list = [shannon(initial_N)]
 
     # first iteration
     print('Solving iteration zero, finding equilibrium from initial guess')
@@ -171,11 +167,10 @@ def simulate_2D(steps, source, initial_guess, initial_N, param, mat):
     current_N = encode(decoded_N, all_species)
 
     # store time step
-    frames_N.append(decoded_N)
-    frames_R.append(current_R)
-    frames_up.append(up)
-    frames_in.append(prod)
-    frames_mu.append(mod)
+    last_2_frames_N.append(decoded_N)
+    abundances.append(calc_abundances(current_N))
+
+    convergence_count = 0
 
     for i in range(steps):
 
@@ -196,11 +191,8 @@ def simulate_2D(steps, source, initial_guess, initial_N, param, mat):
         current_N = encode(decoded_N, all_species)
 
         # save time step
-        frames_N.append(decoded_N)
-        frames_R.append(current_R)
-        frames_up.append(up)
-        frames_in.append(prod)
-        frames_mu.append(mod)
+        last_2_frames_N  = [last_2_frames_N[1], decoded_N]
+        abundances.append(calc_abundances(current_N))
 
         # check if shannon diversity has converged
         s = shannon(current_N)
@@ -210,7 +202,11 @@ def simulate_2D(steps, source, initial_guess, initial_N, param, mat):
             avg = sum(s_list[-200:])/200
             dev = np.sqrt(sum((s_list[-200:]-avg)**2)/200)
 
-            if(np.abs(s-avg)<dev/10000):
+            if(np.abs(s-avg)<dev):
+                convergence_count += 1
+            else: 
+                convergence_count = 0
+            if convergence_count > 100:
                 print('shannon diversity has converged')
                 break
 
@@ -218,7 +214,7 @@ def simulate_2D(steps, source, initial_guess, initial_N, param, mat):
     t1 = time()
     print(f'\n Time taken to solve for {steps} steps: ', round((t1-t0)/60,4), ' minutes \n')
 
-    return frames_N, frames_R, frames_up, frames_in, frames_mu, current_R, current_N, g_rates, s_list
+    return last_2_frames_N, mod, current_R, current_N, g_rates, s_list, abundances  
 
 
 #-------------------------------------------------------------------------------------------------
@@ -253,14 +249,10 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
     # extract list of all possible species
     all_species = list(range(len(param['g'])))
 
-    # list to store steps of the population grid
     # lists to store time steps 
-    frames_N  = [decode(initial_N)] 
-    frames_R  = [] 
-    frames_up = []
-    frames_in = []
-    frames_mu = []
-    s_list = []
+    last_2_frames_N  = [decode(initial_N)] 
+    abundances = [calc_abundances(initial_N)]
+    s_list = [shannon(initial_N)]
 
     # initial grid size
     n = initial_N.shape[0]
@@ -284,18 +276,18 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
     decoded_N,check,most_present = death_birth_periodic(decode(initial_N),g_rates)
     current_N = encode(decoded_N, all_species)
 
-    frames_N.append(decoded_N)
-    frames_R.append(coarser_R)
-    frames_up.append(change_grid_R(finer_up,n))
-    frames_in.append(change_grid_R(finer_prod,n))
-    frames_mu.append(mod)
+    # store time step
+    last_2_frames_N.append(decoded_N)
+    abundances.append(calc_abundances(current_N))
+
+    convergence_count = 0
 
     for i in range(steps):
 
         print("Step %i" % (i+1))
 
         # compute new equilibrium, initial guess is previous equilibrium
-        finer_R, finer_up, finer_prod = SOR_3D(change_grid_N(current_N,t*n), param, mat, source, finer_R)
+        finer_R, _, _ = SOR_3D(change_grid_N(current_N,(t+1)*n), param, mat, source, finer_R)
         coarser_R = change_grid_R(finer_R,n)
 
         # compute growth rates
@@ -308,12 +300,9 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
             break
         current_N = encode(decoded_N, all_species)
 
-        frames_N.append(decoded_N)
-        frames_R.append(coarser_R)
-        frames_up.append(change_grid_R(finer_up,n))
-        frames_in.append(change_grid_R(finer_prod,n))
-        frames_mu.append(mod)
-        
+        # save time step
+        last_2_frames_N  = [last_2_frames_N[1], decoded_N]
+        abundances.append(calc_abundances(current_N))
 
         # check if shannon diversity has converged
         s = shannon(current_N)
@@ -322,8 +311,12 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
         if len(s_list)>1000:
             avg = sum(s_list[-200:])/200
             dev = np.sqrt(sum((s_list[-200:]-avg)**2)/200)
-            print(dev,avg,s)
-            if(np.abs(s-avg)<dev/10000):
+
+            if(np.abs(s-avg)<dev):
+                convergence_count += 1
+            else: 
+                convergence_count = 0
+            if convergence_count > 100:
                 print('shannon diversity has converged')
                 break
 
@@ -331,8 +324,26 @@ def simulate_MG(steps, source, initial_guess, initial_N, param, mat, t):
     t1 = time()
     print(f'\n Time taken to solve for {steps} steps: ', round((t1-t0)/60,4), ' minutes \n')
 
-    return frames_N, frames_R, frames_up, frames_in, frames_mu, current_R, current_N, g_rates, s_list
+    return last_2_frames_N, mod, current_R, current_N, g_rates, s_list, abundances
 
+
+#-------------------------------------------------------------------------------------------------
+# function to quickly compute relative abundances from grid
+
+def calc_abundances(frame):
+
+    """
+    frame:   matrix, nxnxn_s, species frame
+
+    RETURNS ab: vector, n_s, contains relative abundances of each species
+
+    """
+
+    total_cells = frame.shape[0] * frame.shape[1]  
+    species_counts = np.sum(frame, axis=(0, 1)) 
+    ab = species_counts / total_cells
+
+    return ab
 
 #-------------------------------------------------------------------------------------------------
 # function to calculate Shannon diversity

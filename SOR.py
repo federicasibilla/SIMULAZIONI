@@ -59,7 +59,7 @@ def SOR_2D(N, param, mat, source, initial_guess):
     # SOR algorithm, convergence condition based on update relative to current absolute value
     while ((delta_list[-1]>best_BC[1:n+1,1:n+1,:]*stop).any()):
 
-        current_source = source(best_BC[1:n+1,1:n+1,:],N,param,mat)[0]
+        current_source, up , prod = source(best_BC[1:n+1,1:n+1,:],N,param,mat)
 
         # prepare grid, give red and black colors        
         i, j = np.mgrid[1:n+1, 1:n+1]
@@ -81,7 +81,7 @@ def SOR_2D(N, param, mat, source, initial_guess):
         print("N_iter %d delta_max %e\r" % (len(delta_list)-1, delta_list[-1]), end='')
 
         # check for very small deltas
-        if (np.abs(delta_list[-1])<2e-2):
+        if (np.abs(delta_list[-1])<2e-10):
             break
 
     R_eq = best_BC[1:n+1,1:n+1,:]
@@ -90,8 +90,6 @@ def SOR_2D(N, param, mat, source, initial_guess):
     t1 = time()
     print('\n Time taken to solve for equilibrium: ', round((t1-t0)/60,4), ' minutes')
 
-    # extract uptake at equilibrium condition
-    _, up, prod = source(best_BC[1:n+1,1:n+1,:],N,param,mat)
 
     return R_eq, up, prod 
 
@@ -146,7 +144,8 @@ def SOR_3D(N, param, mat, source, initial_guess):
 
         # computing source
         padded_source = np.zeros((n+2,n+2,3,n_r))
-        padded_source[1:n+1,1:n+1,1] = source(padded_R[1:n+1,1:n+1,1,:],N,param,mat)[0]
+        s, up, prod = source(padded_R[1:n+1,1:n+1,1,:],N,param,mat)
+        padded_source[1:n+1,1:n+1,1] = s
           
         # prepare grid, assign red and black colors        
         i, j = np.mgrid[1:n+1, 1:n+1]
@@ -179,7 +178,7 @@ def SOR_3D(N, param, mat, source, initial_guess):
         print("N_iter %d delta_max %e\r" % (len(delta_list)-1, delta_list[-1]), end='')
 
         # check for very small deltas
-        if (np.abs(delta_list[-1])<1e-2):
+        if (np.abs(delta_list[-1])<1e-10):
             break
     
     R_eq = padded_R[1:n+1,1:n+1,1,:]
@@ -187,8 +186,5 @@ def SOR_3D(N, param, mat, source, initial_guess):
     # end timing and print time
     t1 = time()
     print('\n Time taken to solve for equilibrium: ', round((t1-t0)/60,4), ' minutes')
-
-    # extract uptake at equilibrium condition
-    _, up, prod = source(padded_R[1:n+1,1:n+1,1,:],N,param,mat)
 
     return R_eq, up, prod
